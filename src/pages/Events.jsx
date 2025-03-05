@@ -47,12 +47,12 @@ const Events = () => {
       style={{ backgroundImage: "url('/src/assets/rapollogif.gif')" }}
     >
       <div className="text-center mb-10">
-        <h2 className="text-red-600 text-3xl font-bold">RECENT EVENTS</h2>
-        <p className="text-gray-400 mt-2">Stay updated with our latest upcoming events. Don't miss out on the excitement!</p>
+        <h2 className="text-red-600 text-3xl font-bold text-stroke">RECENT EVENTS</h2>
+        <p className="text-gray-400 mt-2 text-stroke">Stay updated with our latest upcoming events. Don't miss out on the excitement!</p>
       </div>
 
       {events2024.length > 0 && (
-        <div className="relative w-full max-w-4xl mx-auto mb-10">
+        <div className="relative w-full max-w-2xl mx-auto mb-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -72,10 +72,10 @@ const Events = () => {
 
           {events2024.length > 1 && (
             <div className="absolute top-1/2 left-0 right-0 flex justify-between px-4">
-              <button onClick={prevSlide} className="text-white bg-gray-700 p-2 rounded-full hover:bg-gray-600">
+              <button onClick={prevSlide} className="text-white text-stroke bg-gray-700 p-2 rounded-full hover:bg-gray-600">
                 ❮
               </button>
-              <button onClick={nextSlide} className="text-white bg-gray-700 p-2 rounded-full hover:bg-gray-600">
+              <button onClick={nextSlide} className="text-white text-stroke bg-gray-700 p-2 rounded-full hover:bg-gray-600">
                 ❯
               </button>
             </div>
@@ -85,21 +85,21 @@ const Events = () => {
 
       <div className="flex gap-10">
         <div className="w-70%">
-          <h3 className="text-xl font-bold text-white mb-4">PAST EVENTS</h3>
+          <h3 className="text-4xl font-bold text-stroke1 text-white mb-4">EVENTS GALLERY</h3>
 
-          <div className="space-y-6">
+          <div className="space-y-6 text-stroke1">
             {filteredEvents.length > 0 ? (
               filteredEvents.map((event, index) => (
                 <div key={index} className="flex items-center p-5 space-x-5">
                   <img
                     src={event.photo}
                     alt={event.name}
-                    className="w-28 h-28 object-cover rounded-lg border-4 border-white cursor-pointer hover:opacity-80"
+                    className="w-75 h-75 object-cover rounded-lg border-4 border-white cursor-pointer hover:opacity-80"
                     onClick={() => setYoutubeEvent(event)}
                   />
                   <div className="text-left">
-                    <h4 className="text-lg font-bold">{event.name}</h4>
-                    <p className="text-gray-300 text-sm">{event.description}</p>
+                    <h4 className="text-3xl font-bold">{event.name}</h4>
+                    <p className="text-gray-300 text-2xl">{event.description}</p>
                   </div>
                 </div>
               ))
