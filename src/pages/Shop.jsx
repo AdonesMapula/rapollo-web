@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaSearch, FaShoppingCart, FaRuler, FaTimes, FaPlus, FaMinus } from "react-icons/fa";
 import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 
 const Shop = () => {
   const categories = ["All", "T-Shirts", "Hoodies", "Caps", "Accessories"];
@@ -22,11 +22,14 @@ const Shop = () => {
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [formData, setFormData] = useState({
-  fullName: "",
-  email: "",
-  phone: "",
-  paymentMethod: "",
-});
+    fullName: "",
+    email: "",
+    phone: "",
+    shippingAddress: "",
+    paymentMethod: "",
+    itemsPurchased: [], // New field to store item names
+  });
+  
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -94,12 +97,60 @@ const Shop = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Payment Details:", formData);
-    setShowPaymentModal(false); 
-    setShowConfirmation(true);
-  };
+  
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.paymentMethod || !formData.shippingAddress) {
+      alert("Please complete all fields.");
+      return;
+    }
+  
+    const transactionId = `TXN-${Date.now()}`; // Generate a unique transaction ID
+  
+    // Extract item names from cart
+    const itemNames = cart.map(item => item.name);
+  
+    const orderData = {
+      transactionId,
+      customerName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      shippingAddress: formData.shippingAddress,
+      paymentMethod: formData.paymentMethod,
+      itemsPurchased: itemNames, // Store item names
+      cartItems: cart.map(item => ({
+        productId: item.id,
+        name: item.name,
+        size: item.size,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount,
+      orderDate: new Date().toISOString(),
+    };
+  
+    try {
+      await addDoc(collection(db, "solditems"), orderData);
+      console.log("Order successfully added to Firestore!");
+  
+      sendEmailConfirmation(orderData); // Send email after order
+  
+      setCart([]);
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        shippingAddress: "",
+        paymentMethod: "",
+        itemsPurchased: [],
+      });
+  
+      setShowPaymentModal(false);
+      setShowConfirmation(true);
+    } catch (error) {
+      console.error("Error adding order: ", error);
+    }
+  };  
 
   return (
     <div className="bg-black text-white min-h-screen w-full p-10">
@@ -222,7 +273,7 @@ const Shop = () => {
             <h2 className="text-xl font-semibold mb-4">Shopping Cart</h2>
 
             {cart.length === 0 ? (
-              <p className="text-center">Your cart is empty.</p>
+              <p className="text-center">Your cart is empty. Fill'em up with the latest trend now!</p>
             ) : (
               <div>
                 <ul>
@@ -275,6 +326,14 @@ const Shop = () => {
                             onChange={handleChange}
                           />
                           <input
+                            type="text"
+                            name="shippingAddress"
+                            placeholder="Shipping Address"
+                            className="p-3 bg-gray-200 border border-gray-400 rounded-md focus:outline-none"
+                            value={formData.shippingAddress}
+                            onChange={handleChange}
+                          />
+                          <input
                             type="email"
                             name="email"
                             placeholder="Email Address"
@@ -300,6 +359,21 @@ const Shop = () => {
                             <option value="GCash">GCash</option>
                             <option value="Cash on Delivery">Cash on Delivery</option>
                           </select>
+
+                          {/* Show receipt upload input if GCash is selected */}
+                          {formData.paymentMethod === "GCash" && (
+                            <div>
+                              <label className="block text-sm font-medium">Upload GCash Receipt</label>
+                              <input
+                                type="file"
+                                name="receipt"
+                                accept="image/*"
+                                className="p-2 bg-gray-200 border border-gray-400 rounded-md focus:outline-none"
+                                onChange={handleChange}
+                              />
+                            </div>
+                          )}
+
                           <button
                             type="submit"
                             className="bg-green-600 text-white p-3 rounded-md font-bold hover:bg-green-700"
