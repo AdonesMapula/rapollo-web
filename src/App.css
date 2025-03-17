@@ -6,6 +6,7 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #9c9c9c3b #36363600;
   font-family: hanuman, sans-serif;
+  background-color: black;
 }
 
 .text-stroke {
@@ -59,10 +60,15 @@ body {
 }
 
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
   text-decoration: none;
   color: white;
-  font-size: 1rem;
-  transition: color 0.3s, transform 0.3s;
+  font-size: 16px;
+  font-weight: bold;
+  transition: color 0.3s ease-in-out;
 }
 
 .nav-item:hover {
@@ -71,11 +77,44 @@ body {
 }
 
 .nav-logo {
-  height: 50px;
+  width: 50px;
+  height: auto;
+  transition: transform 0.3s ease-in-out;
+}
+
+.nav-logo:hover {
+  transform: scale(1.1);
+}
+
+.logout-btn {
+  position: absolute;
+  right: 1rem; 
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.599);
+  border: 2px solid rgba(255, 0, 0, 0.34);
+  color: rgba(255, 255, 255, 0.34);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 10px 15px;
+  transition: all 0.3s ease-in-out;
+  border-radius: 5px;
+  width: 70px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  width: 120px; 
+  background: red;
+  color: white;
 }
 
 .content {
-  padding: 2rem;
+  padding-top: 2rem;
   text-align: center;
 }
 

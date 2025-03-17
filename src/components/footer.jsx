@@ -1,5 +1,5 @@
 import React from "react";
-import { FaFacebookF, FaInstagram, FaEnvelope } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaEnvelope, FaYoutube } from "react-icons/fa";
 import Logo from "/src/assets/logo2.png";
 
 const Footer = () => {
@@ -13,14 +13,17 @@ const Footer = () => {
 
       {/* Right - Social Media Icons */}
       <div className="flex space-x-4">
-        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+        <a href="https://web.facebook.com/rapollocebu/" target="_blank" rel="noopener noreferrer">
           <FaFacebookF className="text-white hover:text-black transition text-lg" />
         </a>
-        <a href="mailto:rapollo@example.com">
+        <a href="mailto:rapollo.ubec@gmail.com">
           <FaEnvelope className="text-white hover:text-black transition text-lg" />
         </a>
-        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.instagram.com/rapollo.ubec/" target="_blank" rel="noopener noreferrer">
           <FaInstagram className="text-white hover:text-black transition text-lg" />
+        </a>
+        <a href="https://www.youtube.com/@RAPOLLO" target="_blank" rel="noopener noreferrer">
+          <FaYoutube className="text-white hover:text-black transition text-lg" />
         </a>
       </div>
     </footer>

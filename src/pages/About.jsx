@@ -3,10 +3,7 @@ import React from "react";
 const About = () => {
   return (
     <div className="bg-black text-white min-h-screen w-full bg-cover bg-center bg-fixed font-hanuman" style={{ backgroundImage: "url('/src/assets/aboutbg.jpg')" }}>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@300;400;700&display=swap" rel="stylesheet" />
-      
+            
       <div className="text-center pt-15">
         <h1 className="text-4xl font-bold uppercase">RAPOLLO - UBEC CITY</h1>
       </div>

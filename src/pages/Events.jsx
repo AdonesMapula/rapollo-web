@@ -3,10 +3,18 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase"; 
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
+import { FaChevronLeft, FaChevronRight, FaPlayCircle } from "react-icons/fa";
 
 const Events = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const indexOfLastEvent = currentPage * itemsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const [selectedYear, setSelectedYear] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [youtubeEvent, setYoutubeEvent] = useState(null);
@@ -29,12 +37,24 @@ const Events = () => {
   const years = [...new Set(events.map((event) => new Date(event.year).getFullYear()))].sort((a, b) => b - a);
 
   useEffect(() => {
-    if (selectedYear === "All") {
-      setFilteredEvents(events);
-    } else {
-      setFilteredEvents(events.filter((event) => new Date(event.year).getFullYear().toString() === selectedYear));
+    let updatedEvents = events;
+  
+    if (selectedYear !== "All") {
+      updatedEvents = updatedEvents.filter((event) => 
+        new Date(event.year).getFullYear().toString() === selectedYear
+      );
     }
-  }, [selectedYear, events]);
+  
+    if (searchQuery) {
+      updatedEvents = updatedEvents.filter((event) =>
+        event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+  
+    setFilteredEvents(updatedEvents);
+  }, [selectedYear, searchQuery, events]);
+  
 
   const events2024 = events.filter((event) => new Date(event.year).getFullYear() === 2024);
 
@@ -48,7 +68,7 @@ const Events = () => {
     >
       <div className="text-center mb-10">
         <h2 className="text-red-600 text-3xl font-bold text-stroke">RECENT EVENTS</h2>
-        <p className="text-gray-400 mt-2 text-stroke">Stay updated with our latest upcoming events. Don't miss out on the excitement!</p>
+        <p className="text-white/50 mt-2 text-stroke">Stay updated with our latest upcoming events. Don't miss out on the excitement!</p>
       </div>
 
       {events2024.length > 0 && (
@@ -83,35 +103,62 @@ const Events = () => {
         </div>
       )}
 
-      <div className="flex gap-10">
-        <div className="w-70%">
-          <h3 className="text-4xl font-bold text-stroke1 text-white mb-4">EVENTS GALLERY</h3>
-
-          <div className="space-y-6 text-stroke1">
-            {filteredEvents.length > 0 ? (
-              filteredEvents.map((event, index) => (
-                <div key={index} className="flex items-center p-5 space-x-5">
-                  <img
-                    src={event.photo}
-                    alt={event.name}
-                    className="w-75 h-75 object-cover rounded-lg border-4 border-white cursor-pointer hover:opacity-80"
-                    onClick={() => setYoutubeEvent(event)}
-                  />
-                  <div className="text-left">
-                    <h4 className="text-3xl font-bold">{event.name}</h4>
-                    <p className="text-gray-300 text-2xl">{event.description}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-400">No events found for {selectedYear}.</p>
-            )}
+      <div className="flex gap-10 bg-black/70 shadow-lg shadow-black rounded-3xl p-6">
+        <div className="w-full">
+        <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="p-2 w-full border border-gray-500 rounded-lg text-white"
+            />
           </div>
+          <h3 className="text-4xl font-bold text-stroke1 text-white mb-4">EVENTS GALLERY</h3>
+          {filteredEvents.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-black/70 text-left">
+                    <th className="p-4 text-white text-center text-xl font-bold border-b border-white/5">Photo</th>
+                    <th className="p-4 text-white text-center text-l font-bold border-b border-white/5">Event Name</th>
+                    <th className="p-4 text-white text-center text-xl font-bold border-b border-white/5">Description</th>
+                    <th className="p-4 text-white text-center text-xl font-bold border-b border-white/5">Playlist</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentEvents.map((event, index) => (
+                    <tr key={index} className="hover:bg-black transition">
+                      <td className="p-4 border-b border-gray-700">
+                        <img
+                          src={event.photo}
+                          alt={event.name}
+                          className="w-[400px] h-[100px] object-cover rounded-lg border-2 border-white/5"
+                        />
+                      </td>
+                      <td className="p-4 text-xl font-bold border-b text-white">{event.name}</td>
+                      <td className="p-4 text-lg border-b text-gray-300">{event.description}</td>
+                      <td className="p-4 border-b text-center">
+                      <button
+                        className="text-red-600 hover:text-red-400 cursor-pointer transition text-4xl"
+                        onClick={() => setYoutubeEvent(event)}
+                      >
+                        <FaPlayCircle />
+                      </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+            </div>
+          ) : (
+            <p className="text-gray-400">No events found for {selectedYear}.</p>
+          )}
         </div>
 
-        {/* Year Filter Buttons */}
-        <div className="w-1/4 flex flex-col text-lg font-semibold space-y-2">
-          <button
+        <div className="w-1/15 flex flex-col text-lg font-semibold space-y-2 sticky top-0 p-4">
+        <button
             onClick={() => setSelectedYear("All")}
             className={`transition-all duration-300 ${
               selectedYear === "All" ? "text-red-500 border-b-2 border-red-500" : "text-gray-400 hover:text-white"
@@ -134,10 +181,44 @@ const Events = () => {
         </div>
       </div>
 
-      {/* YouTube Video Popup */}
+      <div className="flex justify-center gap-3 py-3 shadow-md mt-5">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="p-2 bg-red-700 text-white rounded-lg disabled:opacity-50"
+        >
+          <FaChevronLeft />
+        </button>
+
+        <div className="flex gap-1">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <span
+              key={i}
+              className={`text-xl ${currentPage === i + 1 ? "text-red-700" : "text-gray-400"}`}
+            >
+              ●
+            </span>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="p-2 bg-red-700 text-white rounded-lg disabled:opacity-50"
+        >
+          <FaChevronRight />
+        </button>
+      </div>
+
+
       {youtubeEvent && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
-          <div className="bg-gray-900 p-6 rounded-lg w-[90%] md:w-[60%] lg:w-[50%] relative">
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/75 bg-opacity-80 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setYoutubeEvent(null);
+          }}
+        >
+          <div className="bg-black border-red-500 border-3 p-6 rounded-lg w-[90%] md:w-[60%] lg:w-[50%] relative">
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-white"
               onClick={() => setYoutubeEvent(null)}
@@ -158,6 +239,7 @@ const Events = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

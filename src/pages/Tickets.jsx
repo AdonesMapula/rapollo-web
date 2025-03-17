@@ -4,6 +4,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { db } from "../firebase";
 import axios from "axios";
 import { collection, getDocs, addDoc, doc, updateDoc } from "firebase/firestore";
+import { motion } from "framer-motion";
+import { getAuth } from "firebase/auth";
+import Login from "./Login";
 
 const Tickets = () => {
   const [formData, setFormData] = useState({
@@ -18,14 +21,16 @@ const Tickets = () => {
   const [eventData, setEventData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageFile, setImageFile] = useState(null);
+  const auth = getAuth();
+  const [showAuthAlert, setShowAuthAlert] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Fetch event details from Firestore
   useEffect(() => {
     const fetchEventData = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "tickets"));
         if (!querySnapshot.empty) {
-          const event = querySnapshot.docs[0].data(); // Assuming only one event
+          const event = querySnapshot.docs[0].data(); 
           setEventData(event);
         }
       } catch (error) {
@@ -101,14 +106,13 @@ const Tickets = () => {
         eventDate: eventData ? String(eventData.eventDate) : "Unknown",
         venue: eventData ? String(eventData.venue) : "Unknown",
         ticketPrice: eventData ? Number(eventData.ticketPrice) : 0,
-        purchaseDate: new Date().toISOString(), // Store current date as string
-        status: "Pending", // Default status for every new purchase
+        purchaseDate: new Date().toISOString(),
+        status: "Pending", 
         receiptURL: uploadedImageUrl || "",
       });
   
       toast.success("🎟️ Ticket order confirmed!", { position: "top-center" });
   
-      // Reset Form
       setFormData({
         fullName: "",
         email: "",
@@ -132,11 +136,11 @@ const Tickets = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex justify-center items-center p-6 relative">
+    <div className="min-h-screen text-white flex justify-center items-center p-6 relative"
+    style={{ backgroundImage: "url('/src/assets/emceebg1.jpg')" }}S>
       <ToastContainer />
       <div className={`max-w-6xl p-10 w-full flex flex-col md:flex-row gap-8 transition-all duration-300 ${showConfirm ? "blur-sm" : ""}`}>
         
-        {/* Left Side: Event Details */}
         <div className="md:w-1/2 text-left border-gray-700">
           <h2 className="text-2xl font-bold uppercase mb-4">Event Details</h2>
           <p className="text-lg"><span className="font-bold">Event Name:</span> {eventData.eventName}</p>
@@ -146,17 +150,16 @@ const Tickets = () => {
           <img src={eventData.imageURL} alt="Event" className="mt-4 w-full rounded-lg" />
         </div>
 
-        {/* Right Side: Ticket Purchase Form */}
         <div className="md:w-1/2 p-10 border-gray-700">
           <h2 className="text-2xl font-bold uppercase text-center mb-4">Wish to buy a ticket?</h2>
           <p className="text-sm text-gray-400 text-center mb-4">Fill out this form now!</p>
-          <p className="text-lg"><span className="font-bold text-red-600">Pagdali 'nimal! {eventData.totalTickets} tickets left!</span></p>
+          <p className="text-lg"><span className="font-bold text-red-600">Hurry! only {eventData.totalTickets} tickets Available!</span></p>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <input
               type="text"
               name="fullName"
               placeholder="Full Name (First Name, Last Name)"
-              className="p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none text-white"
+              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
               value={formData.fullName}
               onChange={handleChange}
             />
@@ -164,7 +167,7 @@ const Tickets = () => {
               type="email"
               name="email"
               placeholder="Email Address"
-              className="p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none text-white"
+              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
               value={formData.email}
               onChange={handleChange}
             />
@@ -172,7 +175,7 @@ const Tickets = () => {
               type="number"
               name="phone"
               placeholder="Phone Number"
-              className="p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none text-white"
+              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
               value={formData.phone}
               onChange={handleChange}
             />
@@ -180,13 +183,13 @@ const Tickets = () => {
               type="number"
               name="quantity"
               placeholder="Quantity of Tickets"
-              className="p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none text-white"
+              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
               value={formData.quantity}
               onChange={handleChange}
             />
             <select
               name="paymentMethod"
-              className="p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none text-white"
+              className="p-3 bg-white/5 gray-800 border border-white/50 rounded-md focus:outline-none text-white"
               value={formData.paymentMethod}
               onChange={handleChange}
             >
@@ -208,14 +211,41 @@ const Tickets = () => {
               </div>
             )}
 
-            <button type="submit" className="bg-red-600 text-white p-3 rounded-md font-bold hover:bg-red-700">
-              Proceed to Payment
-            </button>
+          <div>
+              <button
+                className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-md font-bold"
+                onClick={() => {
+                  if (!auth.currentUser) {
+                    setShowLoginModal(true); 
+                    return;
+                  }
+                  setShowPaymentModal(true); 
+                }}
+              >
+                Proceed to Payment
+              </button>
+
+              {showLoginModal && <Login showAsModal={true} onClose={() => setShowLoginModal(false)} />}
+            </div>
+
           </form>
         </div>
       </div>
+      {showAuthAlert && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/90 bg-opacity-80 z-50">
+          <motion.div className="bg-white text-black p-6 rounded-lg shadow-lg max-w-sm w-full text-center border-4 border-red-600">
+            <h2 className="text-2xl font-extrabold uppercase text-red-600 animate-pulse">Yo! Hold Up! 🚨</h2>
+            <p className="mt-3 text-lg font-medium">You gotta sign in before checking out, fam! 🛒</p>
+            <button 
+              className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-md font-bold uppercase" 
+              onClick={() => setShowAuthAlert(false)}
+            >
+              Aight, Got It! ✌️
+            </button>
+          </motion.div>
+        </div>
+      )}
 
-      {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-gray-900 p-6 rounded-lg text-white w-96 text-center shadow-lg">
@@ -225,7 +255,7 @@ const Tickets = () => {
               <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500">
                 Go Back
               </button>
-              <button onClick={handleConfirm} className="px-4 py-2 bg-green-600 rounded-md hover:bg-green-500">
+              <button onClick={handleConfirm} className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500">
                 Proceed
               </button>
             </div>
