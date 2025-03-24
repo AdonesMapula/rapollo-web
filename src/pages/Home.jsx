@@ -187,10 +187,8 @@ const Home = () => {
             </div>
           </div>
         )}
-      </section>
 
-
-      <section className="w-full py-16 bg-black text-center">
+        <section className="w-full py-16 bg-black text-center">
         <h2 className="text-4xl font-bold uppercase text-red-500">Best Sellers</h2>
         <p className="max-w-3xl mx-auto mt-4 text-gray-300">
           Check out our hottest selling merch! Get yours before they're gone.
@@ -218,6 +216,8 @@ const Home = () => {
           Shop Now
         </Link>
       </section>
+      </section>
+      
     </div>
   );
 };

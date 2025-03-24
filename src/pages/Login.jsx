@@ -33,30 +33,39 @@ export default function Login({ loginHandler, showAsModal = false, onClose }) {
     setLoading(true);
   
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-  
-      if (!user.emailVerified) {
-        setError("Please verify your email before logging in.");
-        setLoading(false);
-        return;
-      }
-  
-      console.log("User logged in:", user);
-      loginHandler && loginHandler(user);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
       
-      if (showAsModal) {
-        onClose();
-      } else {
-        navigate("/pages/home");
+        if (!user.emailVerified) {
+          setError("Thank You! Please continue your shopping!");
+          setLoading(false);
+          
+          // Close the modal after 2 seconds
+          setTimeout(() => {
+            if (showAsModal) {
+              onClose();
+            }
+          }, 1500);
+      
+          return;
+        }
+      
+        console.log("User logged in:", user);
+        loginHandler && loginHandler(user);
+      
+        if (showAsModal) {
+          onClose();
+        } else {
+          navigate("/pages/home");
+        }
+      } catch (error) {
+        setError("Invalid email or password");
+        console.error("Login error:", error);
       }
-    } catch (error) {
-      setError("Invalid email or password");
-      console.error("Login error:", error);
-    }
+      
+      setLoading(false);
     
-    setLoading(false);
-  };
+    };
 
   const handleForgotPassword = async () => {
     if (!email) {

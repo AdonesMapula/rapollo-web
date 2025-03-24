@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase"; 
+import { auth, db } from "../firebase";
 import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc } from "firebase/firestore";
 import loginBackground from "../assets/aboutus.jpg";
 import rapolloLogo from "../assets/logo.png";
+import TermsAndConditionsModal from "./TermsAndConditionsModal";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -13,6 +14,8 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
@@ -45,23 +48,24 @@ export default function SignUp() {
       setTimeout(() => {
         navigate("/login");
       }, 5000);
-      
     } catch (error) {
       setError(error.message);
       console.error("Sign Up error:", error);
     }
-    
+
     setLoading(false);
   };
 
   return (
     <div className="flex h-screen">
+      {/* Left side (Image) */}
       <div className="w-3/4 bg-cover bg-center relative" style={{ backgroundImage: `url(${loginBackground})` }}>
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <img src={rapolloLogo} alt="Rapollo Logo" className="w-3/4" />
         </div>
       </div>
 
+      {/* Right side (Sign-up Form) */}
       <div className="w-1/2 flex items-center justify-center bg-gray-900 text-white">
         <form className="w-2/3 p-8 rounded-lg shadow-lg" onSubmit={handleSignUp}>
           <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
@@ -69,8 +73,9 @@ export default function SignUp() {
           {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
           {successMessage && <p className="text-green-500 text-sm mb-4 text-center">{successMessage}</p>}
 
+          {/* Email Input */}
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-400 mb-2">Email</label>
+            <label htmlFor="email" className="block text-gray-400 text-left mb-2">Email</label>
             <input
               type="email"
               id="email"
@@ -82,8 +87,9 @@ export default function SignUp() {
             />
           </div>
 
+          {/* Password Input */}
           <div className="mb-4">
-            <label htmlFor="password" className="block text-gray-400 mb-2">Password</label>
+            <label htmlFor="password" className="block text-gray-400 text-left mb-2">Password</label>
             <input
               type="password"
               id="password"
@@ -95,8 +101,9 @@ export default function SignUp() {
             />
           </div>
 
+          {/* Confirm Password Input */}
           <div className="mb-4">
-            <label htmlFor="confirmPassword" className="block text-gray-400 mb-2">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="block text-gray-400 text-left mb-2">Confirm Password</label>
             <input
               type="password"
               id="confirmPassword"
@@ -108,25 +115,45 @@ export default function SignUp() {
             />
           </div>
 
-          <div className="text-right mb-6">
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="text-gray-400 text-sm hover:text-white"
-            >
-              Already have an account? Login
-            </button>
+          {/* Terms and Conditions Checkbox */}
+          <div className="flex items-center mb-6">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="w-5 h-5 text-gray-400 cursor-pointer"
+            />
+            <label htmlFor="terms" className="ml-2 text-sm cursor-pointer text-gray-400">
+              I agree to the{" "}
+              <span className="underline cursor-pointer" onClick={() => setShowTerms(true)}>
+                Terms & Conditions
+              </span>
+            </label>
           </div>
 
+          {/* Sign-Up Button */}
           <button
             type="submit"
-            className="w-full bg-gray-700 text-white py-2 rounded-md hover:bg-gray-600 transition"
-            disabled={loading}
+            className={`w-full py-2 rounded-md transition ${agreed ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-400 cursor-not-allowed"}`}
+            disabled={!agreed || loading}
           >
             {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
       </div>
+
+      {/* Terms & Conditions Modal */}
+      {showTerms && (
+        <TermsAndConditionsModal 
+          isOpen={showTerms} 
+          onClose={() => setShowTerms(false)} 
+          onAccept={() => {
+            setAgreed(true);
+            setShowTerms(false);
+          }}
+        />
+      )}
     </div>
   );
 }

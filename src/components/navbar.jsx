@@ -33,17 +33,26 @@ const Navbar = () => {
     <nav className="navbar">
       <ul className="navbar-links">
         <li>
-          <NavLink to="/home" className="nav-item">
+          <NavLink 
+            to="/home" 
+            className={({ isActive }) => `nav-item ${isActive ? "active-nav" : ""}`}
+          >
             <span>Home</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/about" className="nav-item">
+          <NavLink 
+            to="/about" 
+            className={({ isActive }) => `nav-item ${isActive ? "active-nav" : ""}`}
+          >
             <span>About</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/events" className="nav-item">
+          <NavLink 
+            to="/events" 
+            className={({ isActive }) => `nav-item ${isActive ? "active-nav" : ""}`}
+          >
             <span>Events</span>
           </NavLink>
         </li>
@@ -59,30 +68,37 @@ const Navbar = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/emcees" className="nav-item">
+          <NavLink 
+            to="/emcees" 
+            className={({ isActive }) => `nav-item ${isActive ? "active-nav" : ""}`}
+          >
             <span>Emcees</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/shop" className="nav-item">
+          <NavLink 
+            to="/shop" 
+            className={({ isActive }) => `nav-item ${isActive ? "active-nav" : ""}`}
+          >
             <span>Shop</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/tickets" className="nav-item">
+          <NavLink 
+            to="/tickets" 
+            className={({ isActive }) => `nav-item ${isActive ? "active-nav" : ""}`}
+          >
             <span>Tickets</span>
           </NavLink>
         </li>
       </ul>
 
-      {/* Login/Logout Button - Positioned to the Far Right */}
       {user ? (
         <button onClick={handleLogout}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 border-2 border-red-500/30 text-white/30 flex items-center justify-center text-base cursor-pointer px-4 py-2 transition-colors duration-300 rounded-full w-[70px] hover:bg-red-500 hover:text-white"
-      >
-        <FaSignOutAlt className="text-red-500 text-xl transition-colors duration-300 hover:text-black" />
-      </button>
-      
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 border-2 border-red-500/30 text-white/30 flex items-center justify-center text-base cursor-pointer px-4 py-2 transition-colors duration-300 rounded-full w-[70px] hover:bg-red-500 hover:text-white"
+        >
+          <FaSignOutAlt className="text-red-500 text-xl transition-colors duration-300 hover:text-black" />
+        </button>
       ) : (
         <button
           onClick={() => navigate("/login")}
@@ -90,7 +106,6 @@ const Navbar = () => {
         >
           <FaSignInAlt className="text-red-500 text-xl transition-colors duration-300 hover:text-white" />
         </button>
-
       )}
     </nav>
   );

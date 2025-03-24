@@ -85,6 +85,11 @@ body {
 .nav-logo:hover {
   transform: scale(1.1);
 }
+.active-nav {
+  color: red;
+  transform: scale(1.1);
+  font-weight: bold;
+}
 
 .logout-btn {
   position: absolute;

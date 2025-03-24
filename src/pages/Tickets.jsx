@@ -56,8 +56,15 @@ const Tickets = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!auth.currentUser) {
+      setShowAuthAlert(true); 
+      return;
+    }
+  
     setShowConfirm(true);
   };
+  
 
   const handleImageUpload = async () => {
     if (!imageFile) return null;
@@ -85,33 +92,46 @@ const Tickets = () => {
   const handleConfirm = async () => {
     setShowConfirm(false);
     let uploadedImageUrl = null;
-
+  
     if (imageFile) {
-        uploadedImageUrl = await handleImageUpload();
-        if (!uploadedImageUrl) {
-            toast.error("❌ Failed to upload receipt.");
-            return;
-        }
+      uploadedImageUrl = await handleImageUpload();
+      if (!uploadedImageUrl) {
+        toast.error("❌ Failed to upload receipt.");
+        return;
+      }
     }
-
   
     try {
       await addDoc(collection(db, "soldtickets"), {
-        fullName: String(formData.fullName),
-        email: String(formData.email),
-        phone: String(formData.phone),
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
         quantity: Number(formData.quantity),
-        paymentMethod: String(formData.paymentMethod),
-        eventName: eventData ? String(eventData.eventName) : "Unknown",
-        eventDate: eventData ? String(eventData.eventDate) : "Unknown",
-        venue: eventData ? String(eventData.venue) : "Unknown",
-        ticketPrice: eventData ? Number(eventData.ticketPrice) : 0,
+        paymentMethod: formData.paymentMethod,
+        eventName: eventData?.eventName || "Unknown",
+        eventDate: eventData?.eventDate || "Unknown",
+        venue: eventData?.venue || "Unknown",
+        ticketPrice: eventData?.ticketPrice || 0,
         purchaseDate: new Date().toISOString(),
-        status: "Pending", 
+        status: "Pending",
         receiptURL: uploadedImageUrl || "",
       });
   
-      toast.success("🎟️ Ticket order confirmed!", { position: "top-center" });
+      await axios.post("http://localhost:5000/send-email", {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        quantity: formData.quantity,
+        paymentMethod: formData.paymentMethod,
+        eventName: eventData?.eventName || "Unknown",
+        eventDate: eventData?.eventDate || "Unknown",
+        venue: eventData?.venue || "Unknown",
+        ticketPrice: eventData?.ticketPrice || 0,
+        receiptURL: uploadedImageUrl || "",
+        orderType: "ticket",
+      });
+  
+      toast.success("🎟️ Ticket order confirmed and email sent!", { position: "top-center" });
   
       setFormData({
         fullName: "",
@@ -153,43 +173,39 @@ const Tickets = () => {
         <div className="md:w-1/2 p-10 border-gray-700">
           <h2 className="text-2xl font-bold uppercase text-center mb-4">Wish to buy a ticket?</h2>
           <p className="text-sm text-gray-400 text-center mb-4">Fill out this form now!</p>
-          <p className="text-lg"><span className="font-bold text-red-600">Hurry! only {eventData.totalTickets} tickets Available!</span></p>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Full Name (First Name, Last Name)"
-              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
-              value={formData.fullName}
-              onChange={handleChange}
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <input
-              type="number"
-              name="phone"
-              placeholder="Phone Number"
-              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
-              value={formData.phone}
-              onChange={handleChange}
-            />
-            <input
-              type="number"
-              name="quantity"
-              placeholder="Quantity of Tickets"
-              className="p-3 bg-white/5 border border-white/50 rounded-md focus:outline-none text-white"
-              value={formData.quantity}
-              onChange={handleChange}
-            />
+          <p className="text-lg">
+          <span className="font-bold text-red-600 pb-5 block">  Hurry! only {eventData.totalTickets} tickets Available!</span>
+          </p>
+          
+          <form className="flex flex-col gap-7" onSubmit={handleSubmit}>
+            {["fullName", "email", "phone", "quantity"].map((field, index) => (
+              <div key={index} className="relative">
+                <input
+                  type={field === "email" ? "email" : field === "phone" || field === "quantity" ? "number" : "text"}
+                  name={field}
+                  placeholder=" "
+                  className="p-3 bg-zinc-900 border border-white/50 rounded-md focus:outline-none text-white w-full peer"
+                  value={formData[field]}
+                  onChange={handleChange}
+                />
+                <label
+                  className="absolute left-3 -top-4 text-xs text-gray-400 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white"
+                >
+                  {field === "fullName" ? "Full Name (First Name, Last Name)" :
+                  field === "email" ? "Email Address" :
+                  field === "phone" ? "Phone Number" :
+                  "Quantity of Tickets"}
+                </label>
+
+              </div>
+            ))}
+
+            <label className="block text-xs left-3 text-left font-medium text-gray-400 -mb-7 -mt-5">
+              <span className="text-black">--</span> Payment Method</label>
+
             <select
               name="paymentMethod"
-              className="p-3 bg-white/5 gray-800 border border-white/50 rounded-md focus:outline-none text-white"
+              className="p-3 bg-zinc-900 border border-white/50 rounded-md focus:outline-none text-white w-full"
               value={formData.paymentMethod}
               onChange={handleChange}
             >
@@ -198,28 +214,30 @@ const Tickets = () => {
               <option value="GCash">GCash</option>
             </select>
 
+
             {formData.paymentMethod === "GCash" && (
               <div>
-                <label className="block text-sm font-medium">Upload GCash Receipt</label>
+                <img src="src\assets\rapolloqr.png" alt="GCash QR Code" className="w-32 mx-auto mb-2" />
+                <label className="block text-sm font-medium text-white">Scan QR above and Upload GCash Receipt</label>
                 <input
                   type="file"
                   name="receipt"
                   accept="image/*"
-                  className="p-2 bg-blue-500 border border-blue-900 rounded-md focus:outline-none"
+                  className="p-2 bg-red-600 border hover:bg-red-700 border-red-500 rounded-md focus:outline-none w-full"
                   onChange={(e) => setImageFile(e.target.files[0])}
                 />
               </div>
             )}
 
-          <div>
+            <div>
               <button
                 className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-md font-bold"
                 onClick={() => {
                   if (!auth.currentUser) {
-                    setShowLoginModal(true); 
+                    setShowLoginModal(true);
                     return;
                   }
-                  setShowPaymentModal(true); 
+                  setShowPaymentModal(true);
                 }}
               >
                 Proceed to Payment
@@ -227,9 +245,9 @@ const Tickets = () => {
 
               {showLoginModal && <Login showAsModal={true} onClose={() => setShowLoginModal(false)} />}
             </div>
-
           </form>
         </div>
+
       </div>
       {showAuthAlert && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/90 bg-opacity-80 z-50">
@@ -247,10 +265,22 @@ const Tickets = () => {
       )}
 
       {showConfirm && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex justify-center items-center bg-black/90 bg-opacity-50">
           <div className="bg-gray-900 p-6 rounded-lg text-white w-96 text-center shadow-lg">
             <h3 className="text-xl font-bold">Confirm Order</h3>
             <p className="text-gray-400 mt-2">Is your information correct?</p>
+
+            <div className="mt-4 text-left text-sm bg-gray-800 p-4 rounded-lg">
+              <p><span className="font-bold">Full Name:</span> {formData.fullName}</p>
+              <p><span className="font-bold">Email:</span> {formData.email}</p>
+              <p><span className="font-bold">Phone:</span> {formData.phone}</p>
+              <p><span className="font-bold">Quantity:</span> {formData.quantity}</p>
+              <p><span className="font-bold">Payment Method:</span> {formData.paymentMethod}</p>
+              {formData.paymentMethod === "GCash" && imageFile && (
+                <p className="text-green-400">✔ Receipt Uploaded</p>
+              )}
+            </div>
+
             <div className="flex justify-around mt-4">
               <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500">
                 Go Back
@@ -262,6 +292,7 @@ const Tickets = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
