@@ -140,6 +140,17 @@ export default function SignUp() {
           >
             {loading ? "Signing up..." : "Sign Up"}
           </button>
+
+          {/* Redirect to Login */}
+          <p className="text-sm text-center mt-4">
+            Already have an account?{" "}
+            <span 
+              className="text-blue-400 hover:underline cursor-pointer"
+              onClick={() => navigate("/login")}
+            >
+              Log in here
+            </span>
+          </p>
         </form>
       </div>
 
